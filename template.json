@@ -1,0 +1,124 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "virtualMachines_VMnameWindowsLatest_name": {
+            "defaultValue": "VMnameWindowsLatest",
+            "type": "String"
+        },
+        "disks_VMnameWindowsLatest_OsDisk_1_2ab04bd9e0f344b88c4b8b39f4f97252_externalid": {
+            "defaultValue": "/subscriptions/5827f1b4-226d-451e-bc4a-265c854ea08d/resourceGroups/VM_RG/providers/Microsoft.Compute/disks/VMnameWindowsLatest_OsDisk_1_2ab04bd9e0f344b88c4b8b39f4f97252",
+            "type": "String"
+        },
+        "networkInterfaces_vmnamewindowslate243_z1_externalid": {
+            "defaultValue": "/subscriptions/5827f1b4-226d-451e-bc4a-265c854ea08d/resourceGroups/VM_RG/providers/Microsoft.Network/networkInterfaces/vmnamewindowslate243_z1",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2023-03-01",
+            "name": "[parameters('virtualMachines_VMnameWindowsLatest_name')]",
+            "location": "centralindia",
+            "zones": [
+                "1"
+            ],
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_D8s_v3"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "MicrosoftWindowsServer",
+                        "offer": "WindowsServer",
+                        "sku": "2022-datacenter-azure-edition",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Windows",
+                        "name": "[concat(parameters('virtualMachines_VMnameWindowsLatest_name'), '_OsDisk_1_2ab04bd9e0f344b88c4b8b39f4f97252')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "storageAccountType": "Standard_LRS",
+                            "id": "[parameters('disks_VMnameWindowsLatest_OsDisk_1_2ab04bd9e0f344b88c4b8b39f4f97252_externalid')]"
+                        },
+                        "deleteOption": "Delete",
+                        "diskSizeGB": 1024
+                    },
+                    "dataDisks": [],
+                    "diskControllerType": "SCSI"
+                },
+                "osProfile": {
+                    "computerName": "VMnameWindowsLa",
+                    "adminUsername": "azadmin",
+                    "windowsConfiguration": {
+                        "provisionVMAgent": true,
+                        "enableAutomaticUpdates": true,
+                        "patchSettings": {
+                            "patchMode": "AutomaticByOS",
+                            "assessmentMode": "ImageDefault",
+                            "enableHotpatching": false
+                        },
+                        "enableVMAgentPlatformUpdates": false
+                    },
+                    "secrets": [],
+                    "allowExtensionOperations": true,
+                    "requireGuestProvisionSignal": true
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[parameters('networkInterfaces_vmnamewindowslate243_z1_externalid')]",
+                            "properties": {
+                                "deleteOption": "Detach"
+                            }
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2023-03-01",
+            "name": "[concat(parameters('virtualMachines_VMnameWindowsLatest_name'), '/AzureNetworkWatcherExtension')]",
+            "location": "centralindia",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_VMnameWindowsLatest_name'))]"
+            ],
+            "properties": {
+                "autoUpgradeMinorVersion": true,
+                "publisher": "Microsoft.Azure.NetworkWatcher",
+                "type": "NetworkWatcherAgentWindows",
+                "typeHandlerVersion": "1.4"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2023-03-01",
+            "name": "[concat(parameters('virtualMachines_VMnameWindowsLatest_name'), '/enablevmaccess')]",
+            "location": "centralindia",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_VMnameWindowsLatest_name'))]"
+            ],
+            "properties": {
+                "autoUpgradeMinorVersion": true,
+                "publisher": "Microsoft.Compute",
+                "type": "VMAccessAgent",
+                "typeHandlerVersion": "2.0",
+                "settings": {},
+                "protectedSettings": {}
+            }
+        }
+    ]
+}
